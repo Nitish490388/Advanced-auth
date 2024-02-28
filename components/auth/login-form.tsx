@@ -6,6 +6,7 @@ import * as z from "zod";
 import { LoginSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import { login } from "@/actions/login";
+import { useSearchParams } from "next/navigation";
 
 import {
   Form,
@@ -22,6 +23,9 @@ import { FormSuccess } from "@/components/form-success";
 import { useState, useTransition } from "react";
 
 export const LoginForm = () => {
+
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error") === "OAuthAccountNotLinked" ? "Email already in use with different provider!" : "";
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
@@ -42,8 +46,9 @@ export const LoginForm = () => {
     startTransition(() => {
       login(values)
         .then((data) => {
-          setError(data.error);
-          setSuccess(data.success);
+          setError(data?.error);
+          // TODO: Add when we add 2FA
+          // setSuccess(data.success);
         })
     })
   }
@@ -98,7 +103,7 @@ export const LoginForm = () => {
               )}
             />
           </div>
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button
             className="w-full"
